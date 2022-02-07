@@ -6,6 +6,29 @@ TURN = 0
 EMPTY_SPACE = '+'
 
 
+def get_score(board, depth=0):
+    if (np.any(np.all(board == 'X', axis=0)) or 
+        np.any(np.all(board == 'X', axis=1)) or 
+        np.all(board.diagonal() == 'X') or 
+        np.all(np.fliplr(board).diagonal() == 'X')):
+        # Max Victory
+        return 1 * (1 / (1 + depth))
+    elif (np.any(np.all(board == 'O', axis=0)) or 
+          np.any(np.all(board == 'O', axis=1)) or
+          np.all(board.diagonal() == 'O') or 
+          np.all(np.fliplr(board).diagonal() == 'O')):
+        # Min Victory
+        return -1 * (1 / (1 + depth))
+    elif not (board == ' ').any():
+        # Draw
+        return 0
+    else:
+        # Unfinished Game
+        return None
+
+def getBoard():
+    return BOARD
+
 def initializeBoard():
     global BOARD
     BOARD = [[0] * BOARD_SIZE for i in range(BOARD_SIZE)]
