@@ -1,4 +1,4 @@
-BOARD_SIZE = 15
+BOARD_SIZE = 6
 BOARD = []
 PLAYER1COLOR = None
 PLAYER2COLOR = None
@@ -6,28 +6,34 @@ TURN = 0
 EMPTY_SPACE = '+'
 
 
-def get_score(board, depth=0):
-    if (np.any(np.all(board == 'X', axis=0)) or 
-        np.any(np.all(board == 'X', axis=1)) or 
-        np.all(board.diagonal() == 'X') or 
-        np.all(np.fliplr(board).diagonal() == 'X')):
-        # Max Victory
+def get_score(board, player, last_row_played, last_col_played, depth=0):
+    #checkWin(color: int, row: int, col: int)
+    if last_row_played is None:
+        # no moves yet; unfinished game
+        return None
+    playerInt = 0 if player == "B" else 1
+    oppPlayerInt = 1 if player == "B" else 0
+    # if last_row_played == 5 and last_col_played == 9:
+    #     print(last_row_played, last_col_played)
+    #     print(playerInt, oppPlayerInt)
+    #     print(checkWinWithBoard(board, playerInt, last_row_played, last_col_played))
+    #     print(checkWinWithBoard(board, oppPlayerInt, last_row_played, last_col_played))
+    if checkWinWithBoard(board, playerInt, last_row_played, last_col_played):
+        # player Victory
         return 1 * (1 / (1 + depth))
-    elif (np.any(np.all(board == 'O', axis=0)) or 
-          np.any(np.all(board == 'O', axis=1)) or
-          np.all(board.diagonal() == 'O') or 
-          np.all(np.fliplr(board).diagonal() == 'O')):
-        # Min Victory
+    elif checkWinWithBoard(board, oppPlayerInt, last_row_played, last_col_played):
+        # opponent victory
         return -1 * (1 / (1 + depth))
-    elif not (board == ' ').any():
-        # Draw
-        return 0
     else:
         # Unfinished Game
         return None
 
 def getBoard():
     return BOARD
+
+def setBoard(board):
+    global BOARD
+    BOARD = board
 
 def initializeBoard():
     global BOARD
@@ -37,6 +43,8 @@ def initializeBoard():
 def printBoard():
     print('\n'.join('  '.join(str((EMPTY_SPACE if x == 0 else x)) for x in row) for row in BOARD))
 
+def printThisBoard(board):
+    print('\n'.join('  '.join(str((EMPTY_SPACE if x == 0 else x)) for x in row) for row in board))
 
 def getBlackWhite():
     global PLAYER1COLOR
@@ -54,32 +62,60 @@ def getBlackWhite():
 def getVertRow(row: int, col: int):
     vert = []
     for i in range(-4, 5):
-        if 0 <= col + i <= 14:
+        if 0 <= col + i <= BOARD_SIZE - 1:
             vert.append(BOARD[row][col + i])
+    return vert
+
+def getVertRowWithBoard(board, row: int, col: int):
+    vert = []
+    for i in range(-4, 5):
+        if 0 <= col + i <= BOARD_SIZE - 1:
+            vert.append(board[row][col + i])
     return vert
 
 
 def getHorRow(row: int, col: int):
     vert = []
     for i in range(-4, 5):
-        if 0 <= row + i <= 14:
+        if 0 <= row + i <= BOARD_SIZE - 1:
             vert.append(BOARD[row + i][col])
+    return vert
+
+def getHorRowWithBoard(board, row: int, col: int):
+    vert = []
+    for i in range(-4, 5):
+        if 0 <= row + i <= BOARD_SIZE - 1:
+            vert.append(board[row + i][col])
     return vert
 
 
 def getDia1Row(row: int, col: int):
     vert = []
     for i in range(-4, 5):
-        if 0 <= row + i <= 14 and 0 <= col + i <= 14:
+        if 0 <= row + i <= BOARD_SIZE - 1 and 0 <= col + i <= BOARD_SIZE - 1:
             vert.append(BOARD[row + i][col + i])
+    return vert
+
+def getDia1RowWithBoard(board, row: int, col: int):
+    vert = []
+    for i in range(-4, 5):
+        if 0 <= row + i <= BOARD_SIZE - 1 and 0 <= col + i <= BOARD_SIZE - 1:
+            vert.append(board[row + i][col + i])
     return vert
 
 
 def getDia2Row(row: int, col: int):
     vert = []
     for i in range(-4, 5):
-        if 0 <= row + i <= 14 and 0 <= col + i <= 14:
+        if 0 <= row + i <= BOARD_SIZE - 1 and 0 <= col + i <= BOARD_SIZE - 1:
             vert.append(BOARD[row + i][col + i])
+    return vert
+
+def getDia2RowWithBoard(board, row: int, col: int):
+    vert = []
+    for i in range(-4, 5):
+        if 0 <= row + i <= BOARD_SIZE - 1 and 0 <= col + i <= BOARD_SIZE - 1:
+            vert.append(board[row + i][col + i])
     return vert
 
 
@@ -96,9 +132,20 @@ def checkRow(arr: [str], color):
 
 
 def checkWin(color: int, row: int, col: int):
+    #if row == 5 and col == 9:
+        #print(getVertRow(row, col))
     if checkRow(getVertRow(row, col), color) or checkRow(getHorRow(row, col), color) \
             or checkRow(getDia1Row(row, col), color) or checkRow(getDia2Row(row, col), color):
         print(f"{'Black' if color == 0 else 'White'} Wins!")
+        return True
+    return False
+
+def checkWinWithBoard(board, color: int, row: int, col: int):
+    #if row == 5 and col == 9:
+        #print(getVertRow(row, col))
+    if checkRow(getVertRowWithBoard(board, row, col), color) or checkRow(getHorRowWithBoard(board, row, col), color) \
+            or checkRow(getDia1RowWithBoard(board, row, col), color) or checkRow(getDia2RowWithBoard(board, row, col), color):
+        #print(f"{'Black' if color == 0 else 'White'} Wins!")
         return True
     return False
 
@@ -107,26 +154,25 @@ def play(color: int, row: int = None, col: int = None):
     global BOARD
     legalPlay = False
 
-    if row is not None and col is not None and 0 <= row <= 14 and 0 <= col <= 14:
+    if row is not None and col is not None and 0 <= row <= BOARD_SIZE - 1 and 0 <= col <= BOARD_SIZE - 1:
         printBoard()
         return checkWin(color, row, col)
-
     while not legalPlay:
         row = None
         col = None
         while row is None:
-            val = input(f"{'Black' if color == 0 else 'White'} enter row (0-14): ")
+            val = input(f"{'Black' if color == 0 else 'White'} enter row (0-{BOARD_SIZE - 1}): ")
             try:
-                if 0 <= int(val) <= 14:
+                if 0 <= int(val) <= BOARD_SIZE - 1:
                     row = int(val)
             except:
                 print("Error! Invalid Input!")
                 continue
 
         while col is None:
-            val = input(f"{'Black' if color == 0 else 'White'} enter col (0-14): ")
+            val = input(f"{'Black' if color == 0 else 'White'} enter col (0-{BOARD_SIZE - 1}): ")
             try:
-                if 0 <= int(val) <= 14:
+                if 0 <= int(val) <= BOARD_SIZE - 1:
                     col = int(val)
             except:
                 print("Error! Invalid Input!")
@@ -139,7 +185,7 @@ def play(color: int, row: int = None, col: int = None):
             print("Error! Space Occupied!")
 
     printBoard()
-    return checkWin(color, row, col)
+    return checkWin(color, row, col), row, col
 
 
 def main():
@@ -153,9 +199,9 @@ def main():
         global TURN
 
         if TURN % 2 == 0:
-            win = play(0)
+            win = play(0)[0]
         else:
-            win = play(1)
+            win = play(1)[0]
 
         TURN += 1
 
